@@ -56,7 +56,7 @@ export class Silubridge implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Silubridge',
 		name: 'silubridge',
-		icon: 'file:../silubridge.svg',
+		icon: 'file:silubridge.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Use the Silubridge OpenAI-compatible API',
@@ -87,21 +87,7 @@ export class Silubridge implements INodeType {
 						value: 'listModels',
 					},
 				],
-				default: 'chatCompletion',
-			},
-			{
-				displayName: 'Model',
-				name: 'model',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getModels',
-				},
-				displayOptions: {
-					show: {
-						operation: ['chatCompletion'],
-					},
-				},
-				default: '',
+				default: '??????????????',
 				required: true,
 			},
 			{
@@ -116,7 +102,7 @@ export class Silubridge implements INodeType {
 						operation: ['chatCompletion'],
 					},
 				},
-				default: '你好，请简单介绍一下你自己。',
+				default: 'Please briefly introduce yourself.',
 				required: true,
 			},
 			{
