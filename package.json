@@ -1,0 +1,51 @@
+{
+  "name": "n8n-nodes-silubridge",
+  "version": "0.1.0",
+  "description": "n8n community node for Silubridge OpenAI-compatible API",
+  "license": "MIT",
+  "homepage": "https://github.com/Silubridge/n8n-nodes-silubridge#readme",
+  "author": {
+    "name": "Silubridge"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Silubridge/n8n-nodes-silubridge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Silubridge/n8n-nodes-silubridge/issues"
+  },
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "silubridge",
+    "openai-compatible",
+    "ai"
+  ],
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc && node build-index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "n8n-workflow": "^1.93.0",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/SilubridgeApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Silubridge/Silubridge.node.js"
+    ]
+  }
+}
