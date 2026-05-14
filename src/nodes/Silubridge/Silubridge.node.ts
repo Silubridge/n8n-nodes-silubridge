@@ -1,56 +1,11 @@
 import type {
 	IExecuteFunctions,
-	ILoadOptionsFunctions,
 	INodeExecutionData,
-	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
-	JsonObject,
 } from 'n8n-workflow';
 
-type HttpMethod = 'GET' | 'POST';
-
-async function request(
-	baseUrl: string,
-	apiToken: string,
-	method: HttpMethod,
-	path: string,
-	body?: JsonObject,
-): Promise<JsonObject> {
-	const headers: Record<string, string> = {
-		Authorization: `Bearer ${apiToken}`,
-		'Content-Type': 'application/json',
-	};
-
-	const init: RequestInit = {
-		method,
-		headers,
-	};
-
-	if (body) {
-		init.body = JSON.stringify(body);
-	}
-
-	const response = await fetch(`${baseUrl}${path}`, init);
-	const text = await response.text();
-
-	let parsed: JsonObject | string = text;
-	try {
-		parsed = JSON.parse(text) as JsonObject;
-	} catch {
-		parsed = text;
-	}
-
-	if (!response.ok) {
-		throw new Error(typeof parsed === 'string' ? parsed : JSON.stringify(parsed));
-	}
-
-	if (typeof parsed === 'string') {
-		return { raw: parsed };
-	}
-
-	return parsed;
-}
+import { loadModelOptions, requestJson } from './shared';
 
 export class Silubridge implements INodeType {
 	description: INodeTypeDescription = {
@@ -59,7 +14,7 @@ export class Silubridge implements INodeType {
 		icon: 'file:silubridge.svg',
 		group: ['transform'],
 		version: 1,
-		description: 'Use the Silubridge OpenAI-compatible API',
+		description: 'Call the Silubridge OpenAI-compatible API',
 		defaults: {
 			name: 'Silubridge',
 		},
@@ -81,13 +36,29 @@ export class Silubridge implements INodeType {
 					{
 						name: 'Chat Completion',
 						value: 'chatCompletion',
+						description: 'Send one chat request and return the raw API response',
 					},
 					{
 						name: 'List Models',
 						value: 'listModels',
+						description: 'Return the models currently available to this token',
 					},
 				],
-				default: '??????????????',
+				default: 'chatCompletion',
+			},
+			{
+				displayName: 'Model',
+				name: 'model',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getModels',
+				},
+				displayOptions: {
+					show: {
+						operation: ['chatCompletion'],
+					},
+				},
+				default: '',
 				required: true,
 			},
 			{
@@ -126,25 +97,7 @@ export class Silubridge implements INodeType {
 
 	methods = {
 		loadOptions: {
-			async getModels(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const credentials = await this.getCredentials('silubridgeApi');
-				const baseUrl = String(credentials.baseUrl || '').replace(/\/$/, '');
-				const apiToken = String(credentials.apiToken || '');
-
-				const data = await request(baseUrl, apiToken, 'GET', '/models');
-				const models = Array.isArray((data.data as unknown[]) || []) ? (data.data as JsonObject[]) : [];
-
-				return models
-					.map((item) => {
-						const id = String(item.id || '');
-						if (!id) return null;
-						return {
-							name: id,
-							value: id,
-						};
-					})
-					.filter(Boolean) as INodePropertyOptions[];
-			},
+			getModels: loadModelOptions,
 		},
 	};
 
@@ -159,7 +112,7 @@ export class Silubridge implements INodeType {
 			const operation = this.getNodeParameter('operation', i) as string;
 
 			if (operation === 'listModels') {
-				const response = await request(baseUrl, apiToken, 'GET', '/models');
+				const response = await requestJson(baseUrl, apiToken, 'GET', '/models');
 				returnData.push({ json: response });
 				continue;
 			}
@@ -168,7 +121,7 @@ export class Silubridge implements INodeType {
 			const prompt = this.getNodeParameter('prompt', i) as string;
 			const temperature = this.getNodeParameter('temperature', i) as number;
 
-			const response = await request(baseUrl, apiToken, 'POST', '/chat/completions', {
+			const response = await requestJson(baseUrl, apiToken, 'POST', '/chat/completions', {
 				model,
 				messages: [
 					{

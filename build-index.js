@@ -8,6 +8,7 @@ module.exports = {
   },
   nodes: {
     Silubridge: require('./nodes/Silubridge/Silubridge.node').Silubridge,
+    SilubridgeChatModel: require('./nodes/Silubridge/SilubridgeChatModel.node').SilubridgeChatModel,
   },
 };
 `;

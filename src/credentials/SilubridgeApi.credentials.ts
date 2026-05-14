@@ -25,7 +25,7 @@ export class SilubridgeApi implements ICredentialType {
 			},
 			default: '',
 			required: true,
-			description: '在 Silubridge 令牌管理里生成的令牌，不是 Stripe 密钥',
+			description: 'Create this token in Silubridge token management. Do not use a Stripe key here.',
 		},
 	];
 }
