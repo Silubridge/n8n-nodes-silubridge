@@ -49,7 +49,15 @@ export async function loadModelOptions(this: ILoadOptionsFunctions): Promise<INo
 	const baseUrl = String(credentials.baseUrl || '').replace(/\/$/, '');
 	const apiToken = String(credentials.apiToken || '');
 
-	const data = await requestJson(baseUrl, apiToken, 'GET', '/models');
+	const data = (await this.helpers.httpRequest({
+		method: 'GET',
+		url: `${baseUrl}/models`,
+		headers: {
+			Authorization: `Bearer ${apiToken}`,
+			'Content-Type': 'application/json',
+		},
+		json: true,
+	})) as JsonObject;
 	const models = Array.isArray((data.data as unknown[]) || []) ? (data.data as JsonObject[]) : [];
 
 	return models

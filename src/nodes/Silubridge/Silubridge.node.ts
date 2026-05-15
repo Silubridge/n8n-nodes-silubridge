@@ -47,6 +47,28 @@ export class Silubridge implements INodeType {
 				default: 'chatCompletion',
 			},
 			{
+				displayName: 'Model Source',
+				name: 'modelSource',
+				type: 'options',
+				displayOptions: {
+					show: {
+						operation: ['chatCompletion'],
+					},
+				},
+				options: [
+					{
+						name: 'Choose From List',
+						value: 'list',
+					},
+					{
+						name: 'Enter Manually',
+						value: 'manual',
+					},
+				],
+				default: 'list',
+				description: 'Use the live model list when available, or type a model name manually',
+			},
+			{
 				displayName: 'Model',
 				name: 'model',
 				type: 'options',
@@ -56,10 +78,26 @@ export class Silubridge implements INodeType {
 				displayOptions: {
 					show: {
 						operation: ['chatCompletion'],
+						modelSource: ['list'],
 					},
 				},
 				default: '',
 				required: true,
+			},
+			{
+				displayName: 'Model Name',
+				name: 'manualModel',
+				type: 'string',
+				displayOptions: {
+					show: {
+						operation: ['chatCompletion'],
+						modelSource: ['manual'],
+					},
+				},
+				default: '',
+				required: true,
+				placeholder: 'deepseek-v4-flash',
+				description: 'Manually enter a model name if the live dropdown is empty',
 			},
 			{
 				displayName: 'Prompt',
@@ -117,7 +155,11 @@ export class Silubridge implements INodeType {
 				continue;
 			}
 
-			const model = this.getNodeParameter('model', i) as string;
+			const modelSource = this.getNodeParameter('modelSource', i, 'list') as string;
+			const model =
+				modelSource === 'manual'
+					? (this.getNodeParameter('manualModel', i) as string)
+					: (this.getNodeParameter('model', i) as string);
 			const prompt = this.getNodeParameter('prompt', i) as string;
 			const temperature = this.getNodeParameter('temperature', i) as number;
 

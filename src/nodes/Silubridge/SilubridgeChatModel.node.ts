@@ -34,15 +34,51 @@ export class SilubridgeChatModel implements INodeType {
 		],
 		properties: [
 			{
+				displayName: 'Model Source',
+				name: 'modelSource',
+				type: 'options',
+				options: [
+					{
+						name: 'Choose From List',
+						value: 'list',
+					},
+					{
+						name: 'Enter Manually',
+						value: 'manual',
+					},
+				],
+				default: 'list',
+				description: 'Use the live model list when available, or type a model name manually',
+			},
+			{
 				displayName: 'Model',
 				name: 'model',
 				type: 'options',
 				typeOptions: {
 					loadOptionsMethod: 'getModels',
 				},
+				displayOptions: {
+					show: {
+						modelSource: ['list'],
+					},
+				},
 				default: '',
 				required: true,
 				description: 'Choose one of the models currently available to this token',
+			},
+			{
+				displayName: 'Model Name',
+				name: 'manualModel',
+				type: 'string',
+				displayOptions: {
+					show: {
+						modelSource: ['manual'],
+					},
+				},
+				default: '',
+				required: true,
+				placeholder: 'deepseek-v4-flash',
+				description: 'Manually enter a model name if the live dropdown is empty',
 			},
 			{
 				displayName: 'Temperature',
@@ -78,7 +114,11 @@ export class SilubridgeChatModel implements INodeType {
 		const credentials = await this.getCredentials('silubridgeApi');
 		const baseUrl = String(credentials.baseUrl || '').replace(/\/$/, '');
 		const apiToken = String(credentials.apiToken || '');
-		const model = this.getNodeParameter('model', itemIndex) as string;
+		const modelSource = this.getNodeParameter('modelSource', itemIndex, 'list') as string;
+		const model =
+			modelSource === 'manual'
+				? (this.getNodeParameter('manualModel', itemIndex) as string)
+				: (this.getNodeParameter('model', itemIndex) as string);
 		const temperature = this.getNodeParameter('temperature', itemIndex) as number;
 		const maxTokens = this.getNodeParameter('maxTokens', itemIndex) as number;
 
