@@ -1,7 +1,5 @@
 import { ChatOpenAI } from '@langchain/openai';
 import type {
-	ILoadOptionsFunctions,
-	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
 	ISupplyDataFunctions,
@@ -10,7 +8,7 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionTypes } from 'n8n-workflow';
 
-import { loadModelOptions } from './shared';
+import { searchModels } from './shared';
 
 export class SilubridgeChatModel implements INodeType {
 	description: INodeTypeDescription = {
@@ -53,16 +51,25 @@ export class SilubridgeChatModel implements INodeType {
 			{
 				displayName: 'Model',
 				name: 'model',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getModels',
-				},
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select a model...',
+						typeOptions: {
+							searchListMethod: 'searchModels',
+							searchable: true,
+						},
+					},
+				],
 				displayOptions: {
 					show: {
 						modelSource: ['list'],
 					},
 				},
-				default: '',
 				required: true,
 				description: 'Choose one of the models currently available to this token',
 			},
@@ -105,8 +112,8 @@ export class SilubridgeChatModel implements INodeType {
 	};
 
 	methods = {
-		loadOptions: {
-			getModels: loadModelOptions,
+		listSearch: {
+			searchModels,
 		},
 	};
 
@@ -118,7 +125,7 @@ export class SilubridgeChatModel implements INodeType {
 		const model =
 			modelSource === 'manual'
 				? (this.getNodeParameter('manualModel', itemIndex) as string)
-				: (this.getNodeParameter('model', itemIndex) as string);
+				: (this.getNodeParameter('model.value', itemIndex) as string);
 		const temperature = this.getNodeParameter('temperature', itemIndex) as number;
 		const maxTokens = this.getNodeParameter('maxTokens', itemIndex) as number;
 

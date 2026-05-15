@@ -5,7 +5,7 @@ import type {
 	INodeTypeDescription,
 } from 'n8n-workflow';
 
-import { loadModelOptions, requestJson } from './shared';
+import { requestJson, searchModels } from './shared';
 
 export class Silubridge implements INodeType {
 	description: INodeTypeDescription = {
@@ -71,17 +71,26 @@ export class Silubridge implements INodeType {
 			{
 				displayName: 'Model',
 				name: 'model',
-				type: 'options',
-				typeOptions: {
-					loadOptionsMethod: 'getModels',
-				},
+				type: 'resourceLocator',
+				default: { mode: 'list', value: '' },
+				modes: [
+					{
+						displayName: 'From List',
+						name: 'list',
+						type: 'list',
+						placeholder: 'Select a model...',
+						typeOptions: {
+							searchListMethod: 'searchModels',
+							searchable: true,
+						},
+					},
+				],
 				displayOptions: {
 					show: {
 						operation: ['chatCompletion'],
 						modelSource: ['list'],
 					},
 				},
-				default: '',
 				required: true,
 			},
 			{
@@ -134,8 +143,8 @@ export class Silubridge implements INodeType {
 	};
 
 	methods = {
-		loadOptions: {
-			getModels: loadModelOptions,
+		listSearch: {
+			searchModels,
 		},
 	};
 
@@ -159,7 +168,7 @@ export class Silubridge implements INodeType {
 			const model =
 				modelSource === 'manual'
 					? (this.getNodeParameter('manualModel', i) as string)
-					: (this.getNodeParameter('model', i) as string);
+					: (this.getNodeParameter('model.value', i) as string);
 			const prompt = this.getNodeParameter('prompt', i) as string;
 			const temperature = this.getNodeParameter('temperature', i) as number;
 

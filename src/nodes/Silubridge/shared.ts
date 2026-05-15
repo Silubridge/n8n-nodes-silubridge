@@ -44,7 +44,7 @@ export async function requestJson(
 	return parsed;
 }
 
-export async function loadModelOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+async function fetchModelOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 	const credentials = await this.getCredentials('silubridgeApi');
 	const baseUrl = String(credentials.baseUrl || '').replace(/\/$/, '');
 	const apiToken = String(credentials.apiToken || '');
@@ -70,4 +70,24 @@ export async function loadModelOptions(this: ILoadOptionsFunctions): Promise<INo
 			};
 		})
 		.filter(Boolean) as INodePropertyOptions[];
+}
+
+export async function loadModelOptions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+	return await fetchModelOptions.call(this);
+}
+
+export async function searchModels(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ results: INodePropertyOptions[] }> {
+	const options = await fetchModelOptions.call(this);
+	const normalizedFilter = String(filter || '').trim().toLowerCase();
+
+	if (!normalizedFilter) {
+		return { results: options };
+	}
+
+	return {
+		results: options.filter((option) => option.name.toLowerCase().includes(normalizedFilter)),
+	};
 }

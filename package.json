@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-silubridge",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "n8n community node for Silubridge OpenAI-compatible API",
   "license": "MIT",
   "homepage": "https://github.com/Silubridge/n8n-nodes-silubridge#readme",
